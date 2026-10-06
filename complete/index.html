@@ -258,21 +258,8 @@
 <script>
 /* ===== 設定（変更する場合はここだけ） ===== */
 var CONFIG = {
-  // 回答の保存先（既存のGoogleフォーム）
-  formAction: 'https://docs.google.com/forms/d/e/1FAIpQLScG5uhRVaGJwGyfEzw0kEK5tkIZIX_KfcqbIqQ_6ZLrE_R6vw/formResponse',
-  // Googleフォーム側の項目ID
-  entries: {
-    name: 'entry.2092238618',
-    company: 'entry.908104894',
-    title: 'entry.56889946',
-    question: 'entry.698304912',
-    impression: 'entry.1732475222'
-  },
-  // フォーム2ページ目の必須項目（完了時に自動で回答する固定値）
-  fixed: {
-    'entry.2109138769': 'https://square.link/u/wPFhSz1g', // 参加費用として5,000円を…
-    'entry.537947707': 'YES'                               // 決済を完了した
-  },
+  // 申し込み内容の送信先（スプレッドシートの受付スクリプト）
+  endpoint: 'https://script.google.com/macros/s/AKfycbxRq8FxwIkPwvkCvx38dntFCVARO09a1_WAEpZlI5Eix-niz1-CiCSDzaDUbPUAv-jQ/exec',
   // Squareの決済ページ
   paymentUrl: 'https://checkout.square.site/merchant/MLJM9EHA00BGW/checkout/GVFSLR5T2GRBKXQWMA7YJAIF'
 };
@@ -294,18 +281,11 @@ var CONFIG = {
     window.scrollTo(0, 0);
   }
 
-  // Googleフォームへ送信（2ページ目の必須項目も合わせて送る）
+  // 受付スクリプトへ送信（スプレッドシートへの記録とメール通知）
   function sendToForm(d) {
     var body = new URLSearchParams();
-    body.append('emailAddress', d.email);
-    body.append(CONFIG.entries.name, d.name);
-    body.append(CONFIG.entries.company, d.company);
-    body.append(CONFIG.entries.title, d.title);
-    body.append(CONFIG.entries.question, d.question);
-    body.append(CONFIG.entries.impression, d.impression);
-    Object.keys(CONFIG.fixed).forEach(function (k) { body.append(k, CONFIG.fixed[k]); });
-    body.append('pageHistory', '0,1,2');
-    return fetch(CONFIG.formAction, { method: 'POST', mode: 'no-cors', body: body });
+    ['email', 'name', 'company', 'title', 'question', 'impression'].forEach(function (k) { body.append(k, d[k] || ''); });
+    return fetch(CONFIG.endpoint, { method: 'POST', mode: 'no-cors', body: body });
   }
 
   // 決済完了後にSquareから戻ってきたとき（/complete/ のURL、または末尾が #complete・?complete）
