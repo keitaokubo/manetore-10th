@@ -292,6 +292,16 @@ var CONFIG = {
   var isComplete = /\/complete\/?(index\.html)?$/.test(location.pathname) ||
     /complete/.test(location.hash) || /[?&]complete\b/.test(location.search);
 
+  // アクセス記録（受付スクリプトの「アクセス」シートに1行追加）
+  try {
+    var pv = new URLSearchParams();
+    pv.append('type', 'view');
+    pv.append('page', isComplete ? 'complete' : 'form');
+    pv.append('ref', document.referrer || '');
+    pv.append('device', /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent) ? 'スマホ' : 'PC');
+    fetch(CONFIG.endpoint, { method: 'POST', mode: 'no-cors', body: pv, keepalive: true }).catch(function () {});
+  } catch (e) {}
+
   if (isComplete) {
     show('view-done', 3);
     var notice = $('done-notice');
